@@ -3,7 +3,7 @@ from sqlmodel import select
 from typing import Optional
 from database import get_session
 from models import Player, PlayerValue
-from schemas import PlayerOut
+from schemas import PlayerOut, TradeRequest, TradeResult
 
 router = APIRouter()
 
@@ -48,4 +48,39 @@ def get_player(player_id: int, format: str = Query("superflex")):
             id=p.id, name=p.name, position=p.position,
             team=p.team, age=p.age,
             value=latest_value(session, p.id, format),
+        )
+
+FAIRNESS_THRESHOLD = 0.85
+
+
+def sum_side(session, player_ids, fmt):
+    total = 0.0
+    for pid in player_ids:
+        value = latest_value(session, pid, fmt)
+        # TODO: decide — treat missing value as 0, or track/report it separately?
+        total += value or 0.0
+    return total
+
+
+@router.post("/trade/evaluate", response_model=TradeResult)
+def evaluate_trade(trade: TradeRequest, format: str = Query("superflex")):
+    with get_session() as session:
+        side_a_total = sum_side(session, trade.side_a_ids, format)
+        side_b_total = sum_side(session, trade.side_b_ids, format)
+
+        larger = max(side_a_total, side_b_total)
+        smaller = min(side_a_total, side_b_total)
+        ratio = smaller / larger if larger > 0 else 1.0
+
+        if ratio >= FAIRNESS_THRESHOLD:
+            verdict = "fair"
+        elif side_a_total > side_b_total:
+            verdict = "side_a_favored"
+        else:
+            verdict = "side_b_favored"
+
+        return TradeResult(
+            side_a_total=side_a_total,
+            side_b_total=side_b_total,
+            verdict=verdict,
         )
