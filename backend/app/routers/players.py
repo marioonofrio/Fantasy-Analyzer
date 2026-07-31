@@ -35,6 +35,7 @@ def list_players(
                 team=p.team, age=p.age,
                 value=latest_value(session, p.id, format),
             ))
+        results.sort(key=lambda p: (p.value is None, -(p.value or 0)))
         return results
 
 
