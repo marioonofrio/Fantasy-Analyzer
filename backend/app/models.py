@@ -8,7 +8,7 @@ class Player(SQLModel, table=True):
     name: str
     position: str
     team: Optional[str] = None
-    birthdate: Optional[date] = None
+    age: Optional[int] = None
     draft_year: Optional[int] = None
     draft_round: Optional[int] = None
     draft_pick: Optional[int] = None
