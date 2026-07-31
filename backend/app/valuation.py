@@ -28,72 +28,7 @@ PICK_VALUE = {
 LATE_ROUND_VALUE = 0.05
 PROD_FLOOR = 0.05
 
-players = [
-    {
-        "name": "Puka Nacua",
-        "position": "WR",
-        "age": 25,
-        "points": 309.5,
-        "rookiePick": 2.01
-    },
 
-    {
-        "name": "Jaxon Smith-Njigba",
-        "position": "WR",
-        "age": 24,
-        "points": 297.4,
-        "rookiePick": 3.07
-    },
-
-    {
-        "name": "Caleb Williams",
-        "position": "QB",
-        "age": 24,
-        "points": 309.18,
-        "rookiePick": 7.02
-    },
-
-    {
-        "name": "Christian McCaffrey",
-        "position": "RB",
-        "age": 30,
-        "points": 363.6,
-        "rookiePick": 4.08
-    },
-
-    {
-        "name": "Josh Allen",
-        "position": "QB",
-        "age": 30,
-        "points": 357.62,
-        "rookiePick": 1.01
-    },
-
-    {
-        "name": "Jeremiyah Love",
-        "position": "RB",
-        "age": 21,
-        "points": 0,
-        "rookiePick": 1.01
-    },
-
-    {
-        "name": "DJ Moore",
-        "position": "WR",
-        "age": 29,
-        "points": 144.18,
-        "rookiePick": 8.01
-    },
-
-    {
-        "name": "Devon Achane",
-        "position": "RB",
-        "age": 24.8,
-        "points": 288.3,
-        "rookiePick": 2.05
-    }
-
-]
 
 fmt = "superflex"
 
@@ -146,11 +81,25 @@ def pick_score(pick):
         tier = "late"
     return PICK_VALUE[rnd][tier]
 
-production(players, fmt)
-ageMult(players)
-scarcityCalc(players, fmt)
-totalValue(players)
-normalize(players)
+if __name__ == "__main__":
+    players = [
+        {"name": "Puka Nacua", "position": "WR", "age": 25, "points": 309.5, "rookiePick": 2.01},
+        {"name": "Jaxon Smith-Njigba", "position": "WR", "age": 24, "points": 297.4, "rookiePick": 3.07},
+        {"name": "Caleb Williams", "position": "QB", "age": 24, "points": 309.18, "rookiePick": 7.02},
+        {"name": "Christian McCaffrey", "position": "RB", "age": 30, "points": 363.6, "rookiePick": 4.08},
+        {"name": "Josh Allen", "position": "QB", "age": 30, "points": 357.62, "rookiePick": 1.01},
+        {"name": "Jeremiyah Love", "position": "RB", "age": 21, "points": 0, "rookiePick": 1.01},
+        {"name": "DJ Moore", "position": "WR", "age": 29, "points": 144.18, "rookiePick": 8.01},
+        {"name": "Devon Achane", "position": "RB", "age": 24.8, "points": 288.3, "rookiePick": 2.05},
+    ]
 
-for item in players:
-    print(f"{item['name']:<20} prod={item['prod']:.3f}  age={item['ageMult']:.2f}  scar={item['scarcity']:.2f}  value={item['value']}")
+    fmt = "superflex"
+
+    production(players, fmt)
+    ageMult(players)
+    scarcityCalc(players, fmt)
+    totalValue(players)
+    normalize(players)
+
+    for item in players:
+        print(f"{item['name']:<20} prod={item['prod']:.3f}  age={item['ageMult']:.2f}  scar={item['scarcity']:.2f}  value={item['value']}")
