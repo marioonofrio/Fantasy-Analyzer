@@ -1,6 +1,6 @@
 POSITION_CONFIG = {
     "QB": {"max_points": 357.62, "peak_start": 26, "peak_end": 33, "decay": 0.035},
-    "RB": {"max_points": 363.60, "peak_start": 23, "peak_end": 26, "decay": 0.13},
+    "RB": {"max_points": 363.60, "peak_start": 23, "peak_end": 27, "decay": 0.13},
     "WR": {"max_points": 309.50, "peak_start": 24, "peak_end": 28, "decay": 0.07},
     "TE": {"max_points": 260.00, "peak_start": 25, "peak_end": 30, "decay": 0.05},
 }
@@ -8,13 +8,13 @@ POSITION_CONFIG = {
 FORMAT_CONFIG = {
     "1qb": {
         "QB": {"scarcity": 0.60, "baseline": 250},
-        "RB": {"scarcity": 0.90, "baseline": 180},
+        "RB": {"scarcity": 1.10, "baseline": 180},
         "WR": {"scarcity": 1.10, "baseline": 170},
         "TE": {"scarcity": 0.85, "baseline": 120},
     },
     "superflex": {
         "QB": {"scarcity": 1.50, "baseline": 200},
-        "RB": {"scarcity": 0.85, "baseline": 190},
+        "RB": {"scarcity": 1.00, "baseline": 190},
         "WR": {"scarcity": 1.00, "baseline": 180},
         "TE": {"scarcity": 0.80, "baseline": 120},
     },

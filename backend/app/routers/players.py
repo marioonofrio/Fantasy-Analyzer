@@ -21,6 +21,7 @@ def latest_value(session, player_id, fmt):
 def list_players(
     format: str = Query("superflex"),
     position: Optional[str] = None,
+    valued_only: bool = False,
 ):
     with get_session() as session:
         query = select(Player)
@@ -35,6 +36,10 @@ def list_players(
                 team=p.team, age=p.age,
                 value=latest_value(session, p.id, format),
             ))
+
+        if valued_only:
+            results = [p for p in results if p.value is not None]  
+            
         results.sort(key=lambda p: (p.value is None, -(p.value or 0)))
         return results
 
