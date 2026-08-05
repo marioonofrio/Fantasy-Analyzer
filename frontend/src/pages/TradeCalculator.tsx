@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchPlayers } from "../api/players";
 import type { Player, TradeResult } from "../types/player";
+import { evaluateTrade } from "../api/players";
 
 function TradeCalculator() {
   const [sideAPlayers, setSideAPlayers] = useState<Player[]>([]);
@@ -23,6 +24,21 @@ function TradeCalculator() {
 
   function addToSideB(player: Player) {
     setSideBPlayers([...sideBPlayers, player]);
+  }
+
+  async function handleEvaluate() {
+    setLoading(true);
+    try {
+      const data = await evaluateTrade(
+        sideAPlayers.map((p) => p.id),
+        sideBPlayers.map((p) => p.id)
+      );
+      setResult(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -56,6 +72,17 @@ function TradeCalculator() {
           <li key={p.id}>{p.name} — {p.position}</li>
         ))}
       </ul>
+      <button onClick={handleEvaluate} disabled={loading}>
+        {loading ? "Evaluating..." : "Evaluate Trade"}
+      </button>
+
+      {result && (
+        <div>
+          <p>Side A total: {result.side_a_total}</p>
+          <p>Side B total: {result.side_b_total}</p>
+          <p>Verdict: {result.verdict}</p>
+        </div>
+      )}
     </div>
   );
 }
