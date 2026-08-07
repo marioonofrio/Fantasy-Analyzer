@@ -4,6 +4,14 @@ import { importLeague, fetchLeagueRankings } from "../api/players";
 import type { LeagueRankings } from "../types/player";
 import LoadingSpinner from "../components/LoadingSpinner";
 
+const POSITIONS = ["QB", "RB", "WR", "TE"];
+
+function rankColor(rank: number, totalTeams: number): string {
+  if (rank <= totalTeams / 3) return "#2f9e44";
+  if (rank <= (totalTeams * 2) / 3) return "#f08c00";
+  return "#e03131";
+}
+
 function LeagueImport() {
   const [leagueIdInput, setLeagueIdInput] = useState("");
   const [rankings, setRankings] = useState<LeagueRankings | null>(null);
@@ -49,13 +57,45 @@ function LeagueImport() {
       {rankings && (
         <div>
           <h2>{rankings.league_name} — {rankings.format}</h2>
-          <ol>
-            {rankings.teams.map((t) => (
-              <li key={t.team_id}>
-                {t.display_name} — {t.total_value} ({t.player_count} players)
-              </li>
-            ))}
-          </ol>
+          <table style={{ borderCollapse: "collapse", width: "100%", marginTop: 16 }}>
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Total Value</th>
+                <th>Record</th>
+                <th>Avg Age</th>
+                {POSITIONS.map((pos) => (
+                  <th key={pos}>{pos}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rankings.teams.map((t, i) => (
+                <tr key={t.team_id}>
+                  <td>{i + 1}. {t.display_name}</td>
+                  <td>{t.total_value}</td>
+                  <td>
+                    {t.wins ?? "-"}-{t.losses ?? "-"}{t.ties ? `-${t.ties}` : ""}
+                  </td>
+                  <td>{t.avg_age ?? "-"}</td>
+                  {POSITIONS.map((pos) => (
+                    <td key={pos}>
+                      <span
+                        style={{
+                          background: rankColor(t.positions[pos].rank, rankings.teams.length),
+                          borderRadius: 12,
+                          padding: "2px 10px",
+                          color: "#fff",
+                        }}
+                      >
+                        {t.positions[pos].rank}
+                      </span>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

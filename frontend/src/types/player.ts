@@ -26,3 +26,20 @@ export interface LeagueRankings {
   format: string;
   teams: TeamRanking[];
 }
+
+export interface PositionRank {
+  value: number;
+  rank: number;
+}
+
+export interface TeamRanking {
+  team_id: number;
+  display_name: string;
+  total_value: number;
+  player_count: number;
+  avg_age: number | null;
+  wins: number | null;
+  losses: number | null;
+  ties: number | null;
+  positions: Record<string, PositionRank>;
+}

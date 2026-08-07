@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import select
 from database import get_session
 from models import League, Team, RosterSlot, Player
-from schemas import LeagueImportRequest, LeagueOut, TeamRanking, LeagueRankingsOut
+from schemas import LeagueImportRequest, LeagueOut, TeamRanking, LeagueRankingsOut, PositionRank
 from routers.players import latest_value
 
 router = APIRouter()
