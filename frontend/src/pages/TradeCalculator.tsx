@@ -4,6 +4,7 @@ import { fetchPlayers } from "../api/players";
 import type { Player, TradeResult } from "../types/player";
 import { evaluateTrade } from "../api/players";
 import PlayerSearch from "../components/PlayerSearch";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function TradeCalculator() {
   const [sideAPlayers, setSideAPlayers] = useState<Player[]>([]);
@@ -14,15 +15,19 @@ function TradeCalculator() {
 
   const [format, setFormat] = useState("superflex");
 
+  const [playersLoading, setPlayersLoading] = useState(true);
+
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   useEffect(() => {
+    setPlayersLoading(true);
     fetchPlayers(format)
       .then((data) => {
         setAllPlayers(data);
         setSideAPlayers((prev) => syncValues(prev, data));
         setSideBPlayers((prev) => syncValues(prev, data));
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => setPlayersLoading(false));
   }, [format]);
 
   function syncValues(selected: Player[], fresh: Player[]) {
@@ -72,22 +77,26 @@ function TradeCalculator() {
         <button onClick={() => setFormat("superflex")} disabled={format === "superflex"}>Superflex</button>
       </div>
 
-      <div style={{ display: "flex", gap: 24, justifyContent: "center" }}>
-        <PlayerSearch
-          label="Side A"
-          allPlayers={allPlayers}
-          selectedPlayers={sideAPlayers}
-          onAdd={addToSideA}
-          onRemove={removeFromSideA}
-        />
-        <PlayerSearch
-          label="Side B"
-          allPlayers={allPlayers}
-          selectedPlayers={sideBPlayers}
-          onAdd={addToSideB}
-          onRemove={removeFromSideB}
-        />
-      </div>
+       {playersLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <div style={{ display: "flex", gap: 24, justifyContent: "center" }}>
+          <PlayerSearch
+            label="Side A"
+            allPlayers={allPlayers}
+            selectedPlayers={sideAPlayers}
+            onAdd={addToSideA}
+            onRemove={removeFromSideA}
+          />
+          <PlayerSearch
+            label="Side B"
+            allPlayers={allPlayers}
+            selectedPlayers={sideBPlayers}
+            onAdd={addToSideB}
+            onRemove={removeFromSideB}
+          />
+        </div>
+      )}
 
       <button onClick={handleEvaluate} disabled={loading}>
         {loading ? "Evaluating..." : "Evaluate Trade"}
