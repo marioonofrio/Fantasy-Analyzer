@@ -13,6 +13,9 @@ app.add_middleware(
 
 app.include_router(players.router)
 
+from routers import leagues
+app.include_router(leagues.router)
+
 
 @app.get("/")
 def root():

@@ -18,3 +18,25 @@ class TradeResult(BaseModel):
     side_a_total: float
     side_b_total: float
     verdict: str
+
+class LeagueImportRequest(BaseModel):
+    sleeper_league_id: str
+
+class LeagueOut(BaseModel):
+    id: int
+    name: str
+    format: str
+    team_count: int
+    season: int
+
+class TeamRanking(BaseModel):
+    team_id: int
+    display_name: str
+    total_value: float
+    player_count: int
+
+class LeagueRankingsOut(BaseModel):
+    league_id: int
+    league_name: str
+    format: str
+    teams: list[TeamRanking]
