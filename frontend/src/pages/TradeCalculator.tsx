@@ -12,12 +12,22 @@ function TradeCalculator() {
   const [result, setResult] = useState<TradeResult | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const [format, setFormat] = useState("superflex");
+
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   useEffect(() => {
-    fetchPlayers("superflex")
-      .then(setAllPlayers)
+    fetchPlayers(format)
+      .then((data) => {
+        setAllPlayers(data);
+        setSideAPlayers((prev) => syncValues(prev, data));
+        setSideBPlayers((prev) => syncValues(prev, data));
+      })
       .catch((err) => console.error(err));
-  }, []);
+  }, [format]);
+
+  function syncValues(selected: Player[], fresh: Player[]) {
+    return selected.map((p) => fresh.find((f) => f.id === p.id) ?? p);
+  }
 
   function addToSideA(player: Player) {
     setSideAPlayers([...sideAPlayers, player]);
@@ -40,7 +50,8 @@ function TradeCalculator() {
     try {
       const data = await evaluateTrade(
         sideAPlayers.map((p) => p.id),
-        sideBPlayers.map((p) => p.id)
+        sideBPlayers.map((p) => p.id),
+        format
       );
       setResult(data);
     } catch (err) {
@@ -56,6 +67,10 @@ function TradeCalculator() {
         <Link to="/">Players</Link> | <Link to="/trade">Trade Calculator</Link>
       </nav>
       <h1>Trade Calculator</h1>
+      <div>
+        <button onClick={() => setFormat("1qb")} disabled={format === "1qb"}>1QB</button>
+        <button onClick={() => setFormat("superflex")} disabled={format === "superflex"}>Superflex</button>
+      </div>
 
       <div style={{ display: "flex", gap: 24, justifyContent: "center" }}>
         <PlayerSearch
