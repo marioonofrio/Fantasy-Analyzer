@@ -37,6 +37,9 @@ class Team(SQLModel, table=True):
     league_id: int = Field(foreign_key="league.id")
     sleeper_owner_id: str
     display_name: str
+    wins: Optional[int] = None
+    losses: Optional[int] = None
+    ties: Optional[int] = None
 
 class RosterSlot(SQLModel, table=True):
     __table_args__ = (UniqueConstraint("team_id", "player_id"),)

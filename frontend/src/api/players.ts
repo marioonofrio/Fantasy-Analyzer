@@ -36,3 +36,20 @@ export async function fetchLeagueRankings(leagueId: number): Promise<LeagueRanki
   if (!res.ok) throw new Error("Failed to fetch rankings");
   return res.json();
 }
+
+export interface PositionRank {
+  value: number;
+  rank: number;
+}
+
+export interface TeamRanking {
+  team_id: number;
+  display_name: string;
+  total_value: number;
+  player_count: number;
+  avg_age: number | null;
+  wins: number | null;
+  losses: number | null;
+  ties: number | null;
+  positions: Record<string, PositionRank>;
+}

@@ -81,6 +81,11 @@ def import_league(payload: LeagueImportRequest):
             else:
                 team.display_name = display_name
 
+            settings = roster.get("settings", {})
+            team.wins = settings.get("wins", 0)
+            team.losses = settings.get("losses", 0)
+            team.ties = settings.get("ties", 0)
+
             session.add(team)
             session.flush()
 
@@ -102,6 +107,9 @@ def import_league(payload: LeagueImportRequest):
         return league
 
 
+POSITIONS = ["QB", "RB", "WR", "TE"]
+
+
 @router.get("/leagues/{league_id}/rankings", response_model=LeagueRankingsOut)
 def get_league_rankings(league_id: int):
     with get_session() as session:
@@ -111,22 +119,55 @@ def get_league_rankings(league_id: int):
 
         teams = session.exec(select(Team).where(Team.league_id == league_id)).all()
 
-        rankings = []
+        team_data = []
+        position_totals = {pos: [] for pos in POSITIONS}
+
         for team in teams:
             slots = session.exec(select(RosterSlot).where(RosterSlot.team_id == team.id)).all()
-            total = sum(latest_value(session, s.player_id, league.format) or 0.0 for s in slots)
+
+            total = 0.0
+            ages = []
+            pos_values = {pos: 0.0 for pos in POSITIONS}
+
+            for slot in slots:
+                player = session.get(Player, slot.player_id)
+                value = latest_value(session, slot.player_id, league.format) or 0.0
+                total += value
+                if player:
+                    if player.age is not None:
+                        ages.append(player.age)
+                    if player.position in pos_values:
+                        pos_values[player.position] += value
+
+            avg_age = round(sum(ages) / len(ages), 1) if ages else None
+
+            team_data.append({
+                "team": team, "total_value": round(total),
+                "player_count": len(slots), "avg_age": avg_age, "pos_values": pos_values,
+            })
+            for pos in POSITIONS:
+                position_totals[pos].append((team.id, pos_values[pos]))
+
+        position_ranks = {}
+        for pos in POSITIONS:
+            ordered = sorted(position_totals[pos], key=lambda x: -x[1])
+            position_ranks[pos] = {tid: rank + 1 for rank, (tid, _) in enumerate(ordered)}
+
+        rankings = []
+        for td in team_data:
+            team = td["team"]
+            positions_out = {
+                pos: PositionRank(value=round(td["pos_values"][pos]), rank=position_ranks[pos][team.id])
+                for pos in POSITIONS
+            }
             rankings.append(TeamRanking(
-                team_id=team.id,
-                display_name=team.display_name,
-                total_value=round(total),
-                player_count=len(slots),
+                team_id=team.id, display_name=team.display_name,
+                total_value=td["total_value"], player_count=td["player_count"],
+                avg_age=td["avg_age"], wins=team.wins, losses=team.losses, ties=team.ties,
+                positions=positions_out,
             ))
 
         rankings.sort(key=lambda t: -t.total_value)
-
         return LeagueRankingsOut(
-            league_id=league.id,
-            league_name=league.name,
-            format=league.format,
-            teams=rankings,
+            league_id=league.id, league_name=league.name, format=league.format, teams=rankings,
         )

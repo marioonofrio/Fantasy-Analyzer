@@ -29,11 +29,20 @@ class LeagueOut(BaseModel):
     team_count: int
     season: int
 
+class PositionRank(BaseModel):
+    value: float
+    rank: int
+
 class TeamRanking(BaseModel):
     team_id: int
     display_name: str
     total_value: float
     player_count: int
+    avg_age: Optional[float] = None
+    wins: Optional[int] = None
+    losses: Optional[int] = None
+    ties: Optional[int] = None
+    positions: dict[str, PositionRank]
 
 class LeagueRankingsOut(BaseModel):
     league_id: int
