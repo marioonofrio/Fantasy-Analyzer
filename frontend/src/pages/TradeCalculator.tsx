@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { fetchPlayers } from "../api/players";
 import type { Player, TradeResult } from "../types/player";
 import { evaluateTrade } from "../api/players";
+import PlayerSearch from "../components/PlayerSearch";
 
 function TradeCalculator() {
   const [sideAPlayers, setSideAPlayers] = useState<Player[]>([]);
@@ -24,6 +25,14 @@ function TradeCalculator() {
 
   function addToSideB(player: Player) {
     setSideBPlayers([...sideBPlayers, player]);
+  }
+
+  function removeFromSideA(playerId: number) {
+    setSideAPlayers(sideAPlayers.filter((p) => p.id !== playerId));
+  }
+
+  function removeFromSideB(playerId: number) {
+    setSideBPlayers(sideBPlayers.filter((p) => p.id !== playerId));
   }
 
   async function handleEvaluate() {
@@ -48,30 +57,23 @@ function TradeCalculator() {
       </nav>
       <h1>Trade Calculator</h1>
 
-      <h2>All Players</h2>
-      <ul>
-        {allPlayers.map((p) => (
-          <li key={p.id}>
-            {p.name} — {p.position}
-            <button onClick={() => addToSideA(p)}>Add to A</button>
-            <button onClick={() => addToSideB(p)}>Add to B</button>
-          </li>
-        ))}
-      </ul>
+      <div style={{ display: "flex", gap: 24, justifyContent: "center" }}>
+        <PlayerSearch
+          label="Side A"
+          allPlayers={allPlayers}
+          selectedPlayers={sideAPlayers}
+          onAdd={addToSideA}
+          onRemove={removeFromSideA}
+        />
+        <PlayerSearch
+          label="Side B"
+          allPlayers={allPlayers}
+          selectedPlayers={sideBPlayers}
+          onAdd={addToSideB}
+          onRemove={removeFromSideB}
+        />
+      </div>
 
-      <h2>Side A</h2>
-      <ul>
-        {sideAPlayers.map((p) => (
-          <li key={p.id}>{p.name} — {p.position}</li>
-        ))}
-      </ul>
-
-      <h2>Side B</h2>
-      <ul>
-        {sideBPlayers.map((p) => (
-          <li key={p.id}>{p.name} — {p.position}</li>
-        ))}
-      </ul>
       <button onClick={handleEvaluate} disabled={loading}>
         {loading ? "Evaluating..." : "Evaluate Trade"}
       </button>
