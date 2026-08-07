@@ -1,4 +1,4 @@
-import type { Player, TradeResult } from "../types/player";
+import type { Player, TradeResult, LeagueRankings } from "../types/player";
 
 const API_BASE = "http://127.0.0.1:8000";
 
@@ -18,5 +18,21 @@ export async function evaluateTrade(sideAIds: number[], sideBIds: number[], form
     body: JSON.stringify({ side_a_ids: sideAIds, side_b_ids: sideBIds }),
   });
   if (!res.ok) throw new Error("Failed to evaluate trade");
+  return res.json();
+}
+
+export async function importLeague(sleeperLeagueId: string) {
+  const res = await fetch(`${API_BASE}/leagues/import`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sleeper_league_id: sleeperLeagueId }),
+  });
+  if (!res.ok) throw new Error("League import failed — check the ID and try again");
+  return res.json();
+}
+
+export async function fetchLeagueRankings(leagueId: number): Promise<LeagueRankings> {
+  const res = await fetch(`${API_BASE}/leagues/${leagueId}/rankings`);
+  if (!res.ok) throw new Error("Failed to fetch rankings");
   return res.json();
 }

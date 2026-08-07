@@ -12,3 +12,17 @@ export interface TradeResult {
   side_b_total: number;
   verdict: string;
 }
+
+export interface TeamRanking {
+  team_id: number;
+  display_name: string;
+  total_value: number;
+  player_count: number;
+}
+
+export interface LeagueRankings {
+  league_id: number;
+  league_name: string;
+  format: string;
+  teams: TeamRanking[];
+}
