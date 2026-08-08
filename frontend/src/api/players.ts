@@ -22,9 +22,13 @@ export async function evaluateTrade(sideAIds: number[], sideBIds: number[], form
 }
 
 export async function importLeague(sleeperLeagueId: string) {
+  const token = localStorage.getItem("token");
   const res = await fetch(`${API_BASE}/leagues/import`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({ sleeper_league_id: sleeperLeagueId }),
   });
   if (!res.ok) throw new Error("League import failed — check the ID and try again");
@@ -44,5 +48,14 @@ export async function googleLogin(credential: string) {
     body: JSON.stringify({ credential }),
   });
   if (!res.ok) throw new Error("Google login failed");
+  return res.json();
+}
+
+export async function fetchMyLeagues() {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_BASE}/users/me/leagues`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error("Failed to fetch your leagues");
   return res.json();
 }

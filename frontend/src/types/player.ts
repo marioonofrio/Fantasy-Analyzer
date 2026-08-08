@@ -43,3 +43,11 @@ export interface TeamRanking {
   ties: number | null;
   positions: Record<string, PositionRank>;
 }
+
+export interface SavedLeague {
+  id: number;
+  name: string;
+  format: string;
+  team_count: number;
+  season: number;
+}

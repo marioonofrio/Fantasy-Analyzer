@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { importLeague, fetchLeagueRankings } from "../api/players";
-import type { LeagueRankings } from "../types/player";
+import { importLeague, fetchLeagueRankings, fetchMyLeagues } from "../api/players";
+import type { LeagueRankings, SavedLeague } from "../types/player";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { useAuth } from "../context/AuthContext";
 
 const POSITIONS = ["QB", "RB", "WR", "TE"];
 
@@ -13,10 +14,22 @@ function rankColor(rank: number, totalTeams: number): string {
 }
 
 function LeagueImport() {
+  const { user } = useAuth();
   const [leagueIdInput, setLeagueIdInput] = useState("");
   const [rankings, setRankings] = useState<LeagueRankings | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [myLeagues, setMyLeagues] = useState<SavedLeague[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setMyLeagues([]);
+      return;
+    }
+    fetchMyLeagues()
+      .then(setMyLeagues)
+      .catch((err) => console.error(err));
+  }, [user]);
 
   async function handleImport() {
     setLoading(true);
@@ -32,12 +45,38 @@ function LeagueImport() {
     }
   }
 
+  async function viewSavedLeague(leagueId: number) {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchLeagueRankings(leagueId);
+      setRankings(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div>
       <nav>
         <Link to="/">Players</Link> | <Link to="/trade">Trade Calculator</Link> | <Link to="/league">Import League</Link>
       </nav>
       <h1>Import League</h1>
+
+      {user && myLeagues.length > 0 && (
+        <div>
+          <h3>My Leagues</h3>
+          <ul>
+            {myLeagues.map((l) => (
+              <li key={l.id} onClick={() => viewSavedLeague(l.id)} style={{ cursor: "pointer" }}>
+                {l.name} — {l.format}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div>
         <input

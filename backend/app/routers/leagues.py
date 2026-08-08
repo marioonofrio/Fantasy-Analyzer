@@ -1,10 +1,12 @@
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import select
 from database import get_session
 from models import League, Team, RosterSlot, Player
 from schemas import LeagueImportRequest, LeagueOut, TeamRanking, LeagueRankingsOut, PositionRank
 from routers.players import latest_value
+from auth import get_current_user_id_optional, get_current_user_id
+from models import UserLeague
 
 router = APIRouter()
 
@@ -32,9 +34,8 @@ def fetch_users(league_id: str):
 def detect_format(roster_positions: list) -> str:
     return "superflex" if "SUPER_FLEX" in roster_positions else "1qb"
 
-
 @router.post("/leagues/import", response_model=LeagueOut)
-def import_league(payload: LeagueImportRequest):
+def import_league(payload: LeagueImportRequest, user_id: int | None = Depends(get_current_user_id_optional)):
     try:
         league_data = fetch_league(payload.sleeper_league_id)
     except httpx.HTTPStatusError:
@@ -101,6 +102,16 @@ def import_league(payload: LeagueImportRequest):
                 ).first()
                 if player:
                     session.add(RosterSlot(team_id=team.id, player_id=player.id))
+
+        if user_id:
+            existing_link = session.exec(
+                select(UserLeague).where(
+                    UserLeague.user_id == user_id,
+                    UserLeague.league_id == league.id,
+                )
+            ).first()
+            if not existing_link:
+                session.add(UserLeague(user_id=user_id, league_id=league.id))
 
         session.commit()
         session.refresh(league)
@@ -171,3 +182,10 @@ def get_league_rankings(league_id: int):
         return LeagueRankingsOut(
             league_id=league.id, league_name=league.name, format=league.format, teams=rankings,
         )
+
+@router.get("/users/me/leagues", response_model=list[LeagueOut])
+def get_my_leagues(user_id: int = Depends(get_current_user_id)):
+    with get_session() as session:
+        links = session.exec(select(UserLeague).where(UserLeague.user_id == user_id)).all()
+        leagues = [session.get(League, link.league_id) for link in links]
+        return leagues
