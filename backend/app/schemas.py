@@ -49,3 +49,12 @@ class LeagueRankingsOut(BaseModel):
     league_name: str
     format: str
     teams: list[TeamRanking]
+
+class GoogleAuthRequest(BaseModel):
+    credential: str
+
+class AuthResponse(BaseModel):
+    access_token: str
+    user_id: int
+    email: str
+    name: str

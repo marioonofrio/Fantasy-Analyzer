@@ -37,3 +37,12 @@ export async function fetchLeagueRankings(leagueId: number): Promise<LeagueRanki
   return res.json();
 }
 
+export async function googleLogin(credential: string) {
+  const res = await fetch(`${API_BASE}/auth/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ credential }),
+  });
+  if (!res.ok) throw new Error("Google login failed");
+  return res.json();
+}

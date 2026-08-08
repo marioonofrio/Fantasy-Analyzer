@@ -3,6 +3,7 @@ import { fetchPlayers } from "./api/players";
 import type { Player } from "./types/player";
 import { Link } from "react-router-dom";
 import LoadingSpinner from "./components/LoadingSpinner";
+import Nav from "./components/Nav"
 
 function App() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -23,10 +24,7 @@ function App() {
 
   return (
     <div>
-      <nav>
-        <Link to="/">Players</Link> | <Link to="/trade">Trade Calculator</Link>
-        <Link to="/league">Import League</Link>
-      </nav>
+      <Nav />
       <h1>Players</h1>
       <ul>
         {players.map((p) => (

@@ -69,7 +69,7 @@ function TradeCalculator() {
   return (
     <div>
       <nav>
-        <Link to="/">Players</Link> | <Link to="/trade">Trade Calculator</Link>
+        <Link to="/">Players</Link> | <Link to="/trade">Trade Calculator</Link> | <Link to="/league">Import League</Link>
       </nav>
       <h1>Trade Calculator</h1>
       <div>

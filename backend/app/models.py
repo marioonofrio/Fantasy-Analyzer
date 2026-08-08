@@ -64,3 +64,16 @@ class PlayerValue(SQLModel, table=True):
     format: str
     value: float
     computed_at: datetime = Field(default_factory=datetime.utcnow)
+
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    google_id: str = Field(unique=True)
+    email: str
+    name: str
+
+class UserLeague(SQLModel, table=True):
+    __table_args__ = (UniqueConstraint("user_id", "league_id"),)
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    league_id: int = Field(foreign_key="league.id")

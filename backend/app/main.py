@@ -16,6 +16,9 @@ app.include_router(players.router)
 from routers import leagues
 app.include_router(leagues.router)
 
+from routers import auth
+app.include_router(auth.router)
+
 
 @app.get("/")
 def root():
