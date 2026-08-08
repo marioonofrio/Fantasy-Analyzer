@@ -4,6 +4,9 @@ A dynasty fantasy football trade analyzer and league power-ranking tool, built a
 
 Import a real Sleeper league, get instant power rankings with per-position breakdowns, and evaluate trades using a hand-tuned dynasty valuation model — all served through a self-hosted API running on AWS.
 
+**Live demo:** [main.d3cb2hde0hbx30.amplifyapp.com](https://main.d3cb2hde0hbx30.amplifyapp.com)
+**API:** [18.217.10.168.nip.io](https://18.217.10.168.nip.io) (Dockerized FastAPI on EC2, HTTPS via Let's Encrypt)
+
 ## Tech Stack
 
 **Backend:** FastAPI, SQLModel, PostgreSQL, Alembic, Docker
@@ -87,21 +90,25 @@ Visit `http://localhost:5173`.
 
 ## Deployment
 
-The backend is Dockerized and deployed to an EC2 instance (Amazon Linux 2023), connected to a PostgreSQL instance on RDS. The database has no public access — inbound traffic is restricted at the security-group level to the EC2 instance alone. Schema migrations run against RDS via `alembic upgrade head` inside the running container.
+**Backend:** Dockerized and deployed to an EC2 instance (Amazon Linux 2023), connected to a PostgreSQL instance on RDS. The database has no public access — inbound traffic is restricted at the security-group level to the EC2 instance alone. Schema migrations run against RDS via `alembic upgrade head` inside the running container.
 
-The frontend is not yet deployed to a public host; it currently runs via local Vite dev server only.
+**HTTPS:** Nginx runs on the EC2 instance as a reverse proxy in front of the Docker container, terminating TLS with a free certificate from Let's Encrypt (via Certbot). Since the instance doesn't have a purchased domain, it's addressed through [nip.io](https://nip.io), a wildcard DNS service that resolves `<ip>.nip.io` straight to that IP with zero configuration — enough for Let's Encrypt's HTTP-01 challenge to validate against. Plain HTTP requests are redirected to HTTPS.
+
+**Frontend:** Deployed via AWS Amplify Hosting, connected directly to this GitHub repo. Since the frontend lives in a subfolder rather than the repo root, an `amplify.yml` at the repo root tells Amplify to build from `frontend/`. Every push to `main` triggers an automatic rebuild and redeploy.
+
+**A known constraint worth flagging:** the EC2 instance doesn't have an Elastic IP allocated, so its public IP isn't guaranteed to stay fixed across a stop/start cycle. Since the HTTPS setup is tied to that specific IP (both the nip.io domain and the certificate), a changed IP would require re-provisioning the certificate against the new address. An Elastic IP would be the natural fix if this moves toward being long-running infrastructure rather than a portfolio demo.
 
 ## Known Limitations
 
 - Draft pick capital is not yet factored into league power rankings (roster value only)
-- Frontend has no production deployment yet (planned: AWS Amplify)
-- No custom domain or HTTPS on the backend yet
 - Minimal visual styling — functionality-first, a full design pass is still outstanding
 - `PlayerValue` intentionally retains history across recomputations rather than overwriting, so values reflect the most recent run per player/format
+- HTTPS is served from a free `nip.io` address tied to the EC2 instance's current IP rather than an owned domain — functional and genuinely secure, but not resilient to the IP changing (see Deployment section)
 
 ## Project Structure
 
 ```
+amplify.yml            # tells Amplify to build from frontend/ (monorepo config)
 backend/
   app/
     main.py           # FastAPI app entrypoint
