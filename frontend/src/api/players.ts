@@ -1,6 +1,6 @@
 import type { Player, TradeResult, LeagueRankings } from "../types/player";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
 
 export async function fetchPlayers(format: string = "superflex", position?: string, valuedOnly: boolean = true): Promise<Player[]> {
   const params = new URLSearchParams({ format, valued_only: String(valuedOnly) });
