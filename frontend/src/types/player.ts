@@ -51,3 +51,15 @@ export interface SavedLeague {
   team_count: number;
   season: number;
 }
+
+export interface RosterPlayer {
+  player_id: number;
+  name: string;
+  value: number;
+}
+
+export interface PositionRank {
+  value: number;
+  rank: number;
+  players: RosterPlayer[];
+}

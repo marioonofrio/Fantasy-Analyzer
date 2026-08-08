@@ -29,10 +29,16 @@ class LeagueOut(BaseModel):
     team_count: int
     season: int
 
+class RosterPlayer(BaseModel):
+    player_id: int
+    name: str
+    value: float
+
 class PositionRank(BaseModel):
     value: float
     rank: int
-
+    players: list[RosterPlayer]
+    
 class TeamRanking(BaseModel):
     team_id: int
     display_name: str

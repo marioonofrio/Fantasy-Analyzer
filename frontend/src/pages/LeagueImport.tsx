@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Link } from "react-router-dom";
 import { importLeague, fetchLeagueRankings, fetchMyLeagues } from "../api/players";
 import type { LeagueRankings, SavedLeague } from "../types/player";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
+
 
 const POSITIONS = ["QB", "RB", "WR", "TE"];
 
@@ -20,6 +21,16 @@ function LeagueImport() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [myLeagues, setMyLeagues] = useState<SavedLeague[]>([]);
+  const [expandedTeams, setExpandedTeams] = useState<Set<number>>(new Set());
+
+  function toggleTeam(teamId: number) {
+    setExpandedTeams((prev) => {
+      const next = new Set(prev);
+      if (next.has(teamId)) next.delete(teamId);
+      else next.add(teamId);
+      return next;
+    });
+  }
 
   useEffect(() => {
     if (!user) {
@@ -59,7 +70,7 @@ function LeagueImport() {
   }
 
   return (
-    <div>
+    <div style={{ maxWidth: 1100, margin: "0 auto" }}>
       <nav>
         <Link to="/">Players</Link> | <Link to="/trade">Trade Calculator</Link> | <Link to="/league">Import League</Link>
       </nav>
@@ -110,28 +121,54 @@ function LeagueImport() {
             </thead>
             <tbody>
               {rankings.teams.map((t, i) => (
-                <tr key={t.team_id}>
-                  <td>{i + 1}. {t.display_name}</td>
-                  <td>{t.total_value}</td>
-                  <td>
-                    {t.wins ?? "-"}-{t.losses ?? "-"}{t.ties ? `-${t.ties}` : ""}
-                  </td>
-                  <td>{t.avg_age ?? "-"}</td>
-                  {POSITIONS.map((pos) => (
-                    <td key={pos}>
-                      <span
-                        style={{
-                          background: rankColor(t.positions[pos].rank, rankings.teams.length),
-                          borderRadius: 12,
-                          padding: "2px 10px",
-                          color: "#fff",
-                        }}
-                      >
-                        {t.positions[pos].rank}
-                      </span>
+                <Fragment key={t.team_id}>
+                  <tr>
+                    <td onClick={() => toggleTeam(t.team_id)} style={{ cursor: "pointer" }}>
+                      {expandedTeams.has(t.team_id) ? "▼" : "▶"} {i + 1}. {t.display_name}
                     </td>
-                  ))}
-                </tr>
+                    <td>{t.total_value}</td>
+                    <td>{t.wins ?? "-"}-{t.losses ?? "-"}{t.ties ? `-${t.ties}` : ""}</td>
+                    <td>{t.avg_age ?? "-"}</td>
+                    {POSITIONS.map((pos) => (
+                      <td key={pos}>
+                        <span
+                          style={{
+                            background: rankColor(t.positions[pos].rank, rankings.teams.length),
+                            borderRadius: 12,
+                            padding: "2px 10px",
+                            color: "#fff",
+                          }}
+                        >
+                          {t.positions[pos].rank}
+                        </span>
+                      </td>
+                    ))}
+                  </tr>
+                  {expandedTeams.has(t.team_id) && (
+                    <tr>
+                      <td colSpan={4 + POSITIONS.length}>
+                        <div style={{ display: "flex", gap: 16, padding: "12px 0", justifyContent: "center" }}>
+                          {POSITIONS.map((pos) => (
+                            <div key={pos} style={{ border: "1px solid #444", borderRadius: 8, padding: 12, minWidth: 160 }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
+                                <span>{pos}</span>
+                                <span>{t.positions[pos].value}</span>
+                              </div>
+                              <ul style={{ marginTop: 8 }}>
+                                {t.positions[pos].players.map((p) => (
+                                  <li key={p.player_id} style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <span>{p.name}</span>
+                                    <span>{p.value}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>

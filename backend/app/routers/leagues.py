@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import select
 from database import get_session
 from models import League, Team, RosterSlot, Player
-from schemas import LeagueImportRequest, LeagueOut, TeamRanking, LeagueRankingsOut, PositionRank
+from schemas import LeagueImportRequest, LeagueOut, TeamRanking, LeagueRankingsOut, PositionRank, RosterPlayer
 from routers.players import latest_value
 from auth import get_current_user_id_optional, get_current_user_id
 from models import UserLeague
@@ -139,6 +139,7 @@ def get_league_rankings(league_id: int):
             total = 0.0
             ages = []
             pos_values = {pos: 0.0 for pos in POSITIONS}
+            pos_players = {pos: [] for pos in POSITIONS}
 
             for slot in slots:
                 player = session.get(Player, slot.player_id)
@@ -149,12 +150,19 @@ def get_league_rankings(league_id: int):
                         ages.append(player.age)
                     if player.position in pos_values:
                         pos_values[player.position] += value
+                        pos_players[player.position].append(
+                            RosterPlayer(player_id=player.id, name=player.name, value=round(value))
+                        )
+
+            for pos in POSITIONS:
+                pos_players[pos].sort(key=lambda p: -p.value)
 
             avg_age = round(sum(ages) / len(ages), 1) if ages else None
 
             team_data.append({
                 "team": team, "total_value": round(total),
-                "player_count": len(slots), "avg_age": avg_age, "pos_values": pos_values,
+                "player_count": len(slots), "avg_age": avg_age,
+                "pos_values": pos_values, "pos_players": pos_players,
             })
             for pos in POSITIONS:
                 position_totals[pos].append((team.id, pos_values[pos]))
@@ -168,7 +176,11 @@ def get_league_rankings(league_id: int):
         for td in team_data:
             team = td["team"]
             positions_out = {
-                pos: PositionRank(value=round(td["pos_values"][pos]), rank=position_ranks[pos][team.id])
+                pos: PositionRank(
+                    value=round(td["pos_values"][pos]),
+                    rank=position_ranks[pos][team.id],
+                    players=td["pos_players"][pos],
+                )
                 for pos in POSITIONS
             }
             rankings.append(TeamRanking(
