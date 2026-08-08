@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchPlayers } from "./api/players";
 import type { Player } from "./types/player";
-import { Link } from "react-router-dom";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Nav from "./components/Nav"
 
